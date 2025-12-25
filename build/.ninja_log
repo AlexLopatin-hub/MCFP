@@ -1,0 +1,8 @@
+# ninja log v7
+4	84	7883799071170264	CMakeFiles/plotter.dir/tinyexpr.c.obj	a8eac7f06379db53
+4	306	7883803196364205	CMakeFiles/plotter.dir/plotter.c.obj	f01665cc166045d8
+307	372	7883803199409531	plotter.exe	449231e46f3242ec
+2	87	7883806360450657	build.ninja	51d157f59bb33b97
+2	87	7883806360450657	D:/Coding/plotter/build/cmake_install.cmake	51d157f59bb33b97
+2	303	7883806360595489	CMakeFiles/plotter.dir/plotter.c.obj	f01665cc166045d8
+303	371	7883806363585861	plotter.exe	c56bf90fd40f9303
