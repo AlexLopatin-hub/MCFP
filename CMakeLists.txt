@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.26)
-project(plotter C CXX)
+cmake_minimum_required(VERSION 3.26)  # Just a random version that came to my head
+project(plotter C)
 
 find_package(SDL2 2.0 REQUIRED)
 
