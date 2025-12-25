@@ -13,14 +13,14 @@ void draw_grid(SDL_Renderer *renderer) {
     SDL_RenderPresent(renderer);
 }
 
-void draw_point_normalized(SDL_Renderer *renderer, double x, double y, int scalar) {
+void draw_point_normalized(SDL_Renderer *renderer, double x, double y, double scalar) {
     int n_x = WIDTH / 2 + x * scalar;
     int n_y = HEIGHT / 2 - y * scalar;
 
     SDL_RenderDrawPoint(renderer, n_x, n_y);
 }
 
-void draw_func(SDL_Renderer *renderer, char *func, int scalar) {
+void draw_func(SDL_Renderer *renderer, char *func, double scalar) {
     double x;
     te_variable var[] = {{"x", &x}};
 
@@ -33,7 +33,7 @@ void draw_func(SDL_Renderer *renderer, char *func, int scalar) {
     
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     double y;
-    for (x = -WIDTH / scalar / 2; x <= WIDTH / scalar / 2; x += 0.1 / scalar) {
+    for (x = -(float)WIDTH / scalar / 2; x <= (float)WIDTH / scalar / 2; x += 0.1 / scalar) {
         y = te_eval(expr);
         draw_point_normalized(renderer, x, y, scalar);
     }
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
     char *expr = argv[1];
-    int scalar = atoi(argv[2]);
+    double scalar = atof(argv[2]);
 
     SDL_Init( SDL_INIT_EVERYTHING );
 
@@ -66,10 +66,22 @@ int main(int argc, char *argv[]) {
     SDL_Event event;
     Uint8 app_running = 1;
     while (app_running) {
-        SDL_Delay(10); 
+        // SDL_Delay(10); 
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
-                app_running = 0;
+            switch (event.type) {
+                case SDL_QUIT:
+                    app_running = 0;
+                case SDL_MOUSEWHEEL:
+                    if (event.wheel.y > 0 ) {
+                        scalar *= 1.11;
+                    } else if (event.wheel.y < 0) {
+                        scalar *= 0.9;
+                    }
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+                    SDL_RenderClear(renderer);
+                    draw_grid(renderer);
+                    draw_func(renderer, expr, scalar);
+                    break;
             }
         }
     }
