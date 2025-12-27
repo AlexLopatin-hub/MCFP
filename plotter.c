@@ -2,8 +2,8 @@
 #include <SDL2/SDL.h>
 #include "tinyexpr.h"
 
-#define WIDTH 600
-#define HEIGHT 400
+#define WIDTH 800
+#define HEIGHT 600
 #define SCALAR 50   // pixels per unit
 
 void draw_grid(SDL_Renderer *renderer) {
@@ -32,10 +32,25 @@ void draw_func(SDL_Renderer *renderer, char *func, double scalar) {
     }
     
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    double y;
-    for (x = -(float)WIDTH / scalar / 2; x <= (float)WIDTH / scalar / 2; x += 0.1 / scalar) {
+    double y = 0, y_old = 0;
+    double step = 0.1 / scalar;
+    for (double i = -(double)WIDTH / scalar / 2; i <= (double)WIDTH / scalar / 2; i += step) {
+        x = i;
+        y_old = y;
         y = te_eval(expr);
+        if (fabs(y) > HEIGHT / scalar) continue;
+        
         draw_point_normalized(renderer, x, y, scalar);
+
+        double dist = fabs(y - y_old) / step;
+        if (dist > 2 && dist < 600) {
+            // printf("x: %f y: %f dist: %f\n", x, y, dist);   // debug feature
+            for (int j = i - step; j < dist; j += 1) {
+                x = i - step / dist * j;
+                y = te_eval(expr);
+                draw_point_normalized(renderer, x, y, scalar);
+            }
+        }
     }
     SDL_RenderPresent(renderer);
     te_free(expr);
@@ -66,7 +81,7 @@ int main(int argc, char *argv[]) {
     SDL_Event event;
     Uint8 app_running = 1;
     while (app_running) {
-        // SDL_Delay(10); 
+        SDL_Delay(10); 
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
                 case SDL_QUIT:
