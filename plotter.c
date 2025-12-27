@@ -83,12 +83,12 @@ void draw_func(SDL_Renderer *renderer, char *func, double scalar) {
 }
 
 int main(int argc, char *argv[]) {
-    if (3 != argc) {
-        fprintf(stderr, "Usage: %s <function> <scalar>\n", argv[0]);
+    if (2 != argc) {
+        fprintf(stderr, "Usage: %s <function>\n", argv[0]);
         exit(-1);
     }
     char *expr = argv[1];
-    double scalar = atof(argv[2]);
+    double scalar = 50;
 
     SDL_Init( SDL_INIT_EVERYTHING );
 
