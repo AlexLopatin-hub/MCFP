@@ -6,10 +6,26 @@
 #define HEIGHT 600
 #define SCALAR 50   // pixels per unit
 
-void draw_grid(SDL_Renderer *renderer) {
+void draw_grid(SDL_Renderer *renderer, double scalar) {
+    int i;
     SDL_SetRenderDrawColor(renderer, 100, 100, 100, 100);
     SDL_RenderDrawLine(renderer, 0, HEIGHT / 2, WIDTH, HEIGHT / 2);
     SDL_RenderDrawLine(renderer, WIDTH / 2, 0, WIDTH / 2,  HEIGHT);
+
+    if (scalar > 5) {
+        // x unit segments
+        for (int x = 0; x < WIDTH / scalar / 2; ++x) {
+            i = x * scalar;
+            SDL_RenderDrawLine(renderer, WIDTH / 2 + i, HEIGHT / 2 + 3, WIDTH / 2 + i, HEIGHT / 2 - 3);
+            SDL_RenderDrawLine(renderer, WIDTH / 2 - i, HEIGHT / 2 + 3, WIDTH / 2 - i, HEIGHT / 2 - 3);
+        }
+        // y unit segments
+        for (int y = 0; y < HEIGHT / scalar / 2; ++y) {
+            i = y * scalar;
+            SDL_RenderDrawLine(renderer, WIDTH / 2 + 3, HEIGHT / 2 + i, WIDTH / 2 - 3, HEIGHT / 2 + i);
+            SDL_RenderDrawLine(renderer, WIDTH / 2 + 3, HEIGHT / 2 - i, WIDTH / 2 - 3, HEIGHT / 2 - i);
+        }
+    }
     SDL_RenderPresent(renderer);
 }
 
@@ -75,7 +91,7 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
 
-    draw_grid(renderer);
+    draw_grid(renderer, scalar);
     draw_func(renderer, expr, scalar);
 
     SDL_Event event;
@@ -94,7 +110,7 @@ int main(int argc, char *argv[]) {
                     }
                     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
                     SDL_RenderClear(renderer);
-                    draw_grid(renderer);
+                    draw_grid(renderer, scalar);
                     draw_func(renderer, expr, scalar);
                     break;
             }
