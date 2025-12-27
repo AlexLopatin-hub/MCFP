@@ -8,36 +8,55 @@
 
 void draw_grid(SDL_Renderer *renderer, double scalar) {
     int i;
-    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 100);
+    SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
     SDL_RenderDrawLine(renderer, 0, HEIGHT / 2, WIDTH, HEIGHT / 2);
     SDL_RenderDrawLine(renderer, WIDTH / 2, 0, WIDTH / 2,  HEIGHT);
 
-    if (scalar > 5) {
+    SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
+    if (scalar > 10) {
         // x unit segments
-        for (int x = 0; x < WIDTH / scalar / 2; ++x) {
+        for (int x = 1; x < WIDTH / scalar / 2; ++x) {
             i = x * scalar;
-            SDL_RenderDrawLine(renderer, WIDTH / 2 + i, HEIGHT / 2 + 3, WIDTH / 2 + i, HEIGHT / 2 - 3);
-            SDL_RenderDrawLine(renderer, WIDTH / 2 - i, HEIGHT / 2 + 3, WIDTH / 2 - i, HEIGHT / 2 - 3);
+            SDL_RenderDrawLine(renderer, WIDTH / 2 + i, 0, WIDTH / 2 + i, HEIGHT);
+            SDL_RenderDrawLine(renderer, WIDTH / 2 - i, 0, WIDTH / 2 - i, HEIGHT);
         }
         // y unit segments
-        for (int y = 0; y < HEIGHT / scalar / 2; ++y) {
+        for (int y = 1; y < HEIGHT / scalar / 2; ++y) {
             i = y * scalar;
-            SDL_RenderDrawLine(renderer, WIDTH / 2 + 3, HEIGHT / 2 + i, WIDTH / 2 - 3, HEIGHT / 2 + i);
-            SDL_RenderDrawLine(renderer, WIDTH / 2 + 3, HEIGHT / 2 - i, WIDTH / 2 - 3, HEIGHT / 2 - i);
+            SDL_RenderDrawLine(renderer, 0, HEIGHT / 2 + i, WIDTH, HEIGHT / 2 + i);
+            SDL_RenderDrawLine(renderer, 0, HEIGHT / 2 - i, WIDTH, HEIGHT / 2 - i);
         }
     }
-    SDL_RenderPresent(renderer);
+}
+
+int normalize(double n, double scalar, char* axis) {
+    if (axis == "x") {
+        return WIDTH / 2 + n * scalar;
+    } else if (axis == "y") {
+        return HEIGHT / 2 - n * scalar;
+    } else return 0;
 }
 
 void draw_point_normalized(SDL_Renderer *renderer, double x, double y, double scalar) {
-    int n_x = WIDTH / 2 + x * scalar;
-    int n_y = HEIGHT / 2 - y * scalar;
+    int n_x = normalize(x, scalar, "x");
+    int n_y = normalize(y, scalar, "y");
 
     SDL_RenderDrawPoint(renderer, n_x, n_y);
 }
 
+void draw_line_normalized(SDL_Renderer *renderer, double x1, double y1, double x2, double y2, double scalar) {
+    int n_x1 = normalize(x1, scalar, "x");
+    int n_y1 = normalize(y1, scalar, "y");
+    int n_x2 = normalize(x2, scalar, "x");
+    int n_y2 = normalize(y2, scalar, "y");
+    
+    SDL_RenderDrawLine(renderer, n_x1, n_y1, n_x2, n_y2);
+}
+
 void draw_func(SDL_Renderer *renderer, char *func, double scalar) {
-    double x;
+    double x = 0, x_old = 0;
+    double y = 0, y_old = 0;
+
     te_variable var[] = {{"x", &x}};
 
     int err;
@@ -48,27 +67,18 @@ void draw_func(SDL_Renderer *renderer, char *func, double scalar) {
     }
     
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    double y = 0, y_old = 0;
+
     double step = 0.1 / scalar;
     for (double i = -(double)WIDTH / scalar / 2; i <= (double)WIDTH / scalar / 2; i += step) {
-        x = i;
-        y_old = y;
-        y = te_eval(expr);
-        if (fabs(y) > HEIGHT / scalar) continue;
-        
-        draw_point_normalized(renderer, x, y, scalar);
+        x_old = x; y_old = y;
+        x = i; y = te_eval(expr);
 
-        double dist = fabs(y - y_old) / step;
-        if (dist > 2 && dist < 600) {
-            // printf("x: %f y: %f dist: %f\n", x, y, dist);   // debug feature
-            for (int j = i - step; j < dist; j += 1) {
-                x = i - step / dist * j;
-                y = te_eval(expr);
-                draw_point_normalized(renderer, x, y, scalar);
-            }
-        }
+        if (fabs(y) > HEIGHT / scalar) continue;
+        if (i == -(double)WIDTH / scalar / 2) continue;
+        
+        draw_line_normalized(renderer, x_old, y_old, x, y, scalar);
     }
-    SDL_RenderPresent(renderer);
+    
     te_free(expr);
 }
 
@@ -93,6 +103,7 @@ int main(int argc, char *argv[]) {
 
     draw_grid(renderer, scalar);
     draw_func(renderer, expr, scalar);
+    SDL_RenderPresent(renderer);
 
     SDL_Event event;
     Uint8 app_running = 1;
@@ -112,6 +123,7 @@ int main(int argc, char *argv[]) {
                     SDL_RenderClear(renderer);
                     draw_grid(renderer, scalar);
                     draw_func(renderer, expr, scalar);
+                    SDL_RenderPresent(renderer);
                     break;
             }
         }
